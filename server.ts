@@ -7,7 +7,6 @@ const app = express()
 dotenv.config()
 
 app.use(express.json())
-
 app.use("/api", router)
 
 app.listen(process.env.PORT, () => {
