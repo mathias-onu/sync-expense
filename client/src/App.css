@@ -1,0 +1,70 @@
+.container, 
+.operation-input, 
+.date-input, 
+.amount-input,
+.file-input {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.container {
+  align-items: center;
+  width: 100vw;
+}
+
+.form {
+  width: 80%;
+  margin-top: 3vh;
+}
+
+.operation-input, 
+.date-input, 
+.amount-input, 
+.file-input {
+  margin-top: 10px;
+}
+
+.date-input label, 
+.amount-input label, 
+.operation-input label {
+  margin-bottom: 8px;
+}
+
+.file-input input[type="file"] {
+  width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+}
+
+.file-input label {
+  border: none;
+  cursor: pointer;
+  margin-top: 8px;
+  border: 1px solid #60a5fa;
+  border-radius: 7px;
+  padding: 8px;
+  width: 150px;
+  color: #60a5fa;
+  font-size: 1rem;
+}
+
+.file-input i {
+  margin-right: 5px;
+}
+
+.form-error {
+  margin-top: 5px;
+  color: rgb(209, 8, 8);
+}
+
+.upload-btn {
+  margin-top: 15px;
+}
+
+.upload-btn i {
+  margin-right: 5px;
+}
