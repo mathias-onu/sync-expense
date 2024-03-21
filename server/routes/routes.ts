@@ -11,7 +11,6 @@ const upload = multer()
 
 router.get('/auth/google', async (req, res) => {
     const { code } = req.query
-
     try {
         const oauthClient = oauth2Client()
         const { tokens } = await oauthClient.getToken(code as string)
@@ -20,8 +19,8 @@ router.get('/auth/google', async (req, res) => {
         res.json(tokens.access_token)
     } catch (e) {
         const error = e as AxiosError
-        console.log(error.response)
-        res.json(error)
+        console.log(error)
+        res.json(error.response)
     }
 })
 
