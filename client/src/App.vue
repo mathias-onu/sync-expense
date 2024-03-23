@@ -1,4 +1,5 @@
 <script lang="ts">
+import axios from "axios";
 import { defineComponent } from "vue";
 
 interface Operation {
@@ -15,7 +16,8 @@ export default defineComponent({
       ],
       fileValue: null as File | null,
       dateValue: null as string | null,
-      amountValue: null as number | null
+      amountValue: null as number | null,
+      queryParams: new URLSearchParams(window.location.search)
     }
   },
   methods: {
@@ -23,50 +25,71 @@ export default defineComponent({
       if (this.selectedOperation?.operation === 'deposit' && this.fileValue) this.fileValue = null
     },
     changeFile(e: any) {
-      this.fileValue = e.target.files[0]
+      this.fileValue = e.target.files
+      console.log(this.fileValue)
     },
-    submit(e: Event) {
+    async submit(e: Event) {
       e.preventDefault()
       // For FORMS: https://vueform.com/docs/installation
+      // console.log('operation:', this.selectedOperation!.operation)
+      // if (this.fileValue) console.log('file:', this.fileValue)
+      // console.log('date:', this.dateValue)
+      // console.log('amount:', this.amountValue)
 
-      console.log('operation:', this.selectedOperation!.operation)
-      if (this.fileValue) console.log('file:', this.fileValue)
-      console.log('date:', this.dateValue)
-      console.log('amount:', this.amountValue)
+      // Validate the form input
 
-      // WIP: code from previous React app
-      // Assign formdata only when the withdrawal operation is selected (also refactor the request)
-      // const formData = new FormData()
-      // const receipt = data.operation === 'withdrawal' ? data.receipt[0] : ''
-      // formData.append('image', receipt)
-      // setUploading(true)
+      const token = JSON.parse(localStorage.getItem('token')!)
+      
+      // Assign formdata only when the withdrawal operation is selected 
+      if (this.selectedOperation!.operation === 'deposit') {
+        const depositUpload = await axios(`http://localhost:8080/api/convert?date=${this.dateValue}&operation=${this.selectedOperation?.operation}&amount=${Number(this.amountValue)}`, {
+            method: 'POST',
+            headers: {
+              "Authorization": `Bearer ${token}`,
+            }
+        })
+        console.log(depositUpload)
+        console.log(depositUpload.data)
 
-      // try {
-      //   const fileUpload = await fetch(`http://localhost:8080/api/convert?date=${data.date}&operation=${data.operation}&amount=${Number(data.amount)}`, {
-      //     method: 'POST',
-      //     body: formData,
-      //     headers: {
-      //       "Authorization": `Bearer ${token}`,
-      //     }
-      //   })
-      //   console.log('before req', await fileUpload.json())
-      //   if (!fileUpload.ok) throw Error('An error has occurred')
-      //   else {
-      //     setUploading(false)    
-      //     toast.current?.show({ severity: 'success', summary: 'Success', detail: 'The record has been successfully uploaded!' })
-      //   }
-      // } catch (e) {
-      //   console.log('error', e)
-      //   setUploading(false)
-      //   toast.current?.show({ severity: 'error', summary: 'Error', detail: 'An error has occurred' })
-      // }
+        // if (!depositUpload) throw Error('An error has occurred')
+        // else {
+        //   // the submit button must be disabled 
+        //   // toast.current?.show({ severity: 'success', summary: 'Success', detail: 'The record has been successfully uploaded!' })
+        // }
+      } else {
+        // const formData = new FormData()
+        // const receipt = data.receipt[0] : ''
+        // formData.append('image', receipt)
+  
+        // try {
+          // const fileUpload = await axios(`http://localhost:8080/api/convert?date=${data.date}&operation=${data.operation}&amount=${Number(data.amount)}`, {
+          //   method: 'POST',
+          //   body: formData,
+          //   headers: {
+          //     "Authorization": `Bearer ${token}`,
+          //   }
+          // })
+          // console.log('before req', await fileUpload.json())
+          // if (!fileUpload.ok) throw Error('An error has occurred')
+          // else {
+          //   // the submit button must be disabled 
+          //   // toast.current?.show({ severity: 'success', summary: 'Success', detail: 'The record has been successfully uploaded!' })
+          // }
+        // } catch (e) {
+        //   console.log('error', e)
+        //   setUploading(false)
+        //   toast.current?.show({ severity: 'error', summary: 'Error', detail: 'An error has occurred' })
+        // }
+      }
     }
   },
-  mounted() {
-    console.log(`On mount`)
+  async mounted() {
+    const oauthCode = this.queryParams.get('code')
+    const token = localStorage.getItem('token')
     
-    // WIP: code from previous React app
-    // const oauthCode = queryParams.get('code')
+    // console.log(oauthCode)
+    // console.log(token)
+    // console.log(!token && !oauthCode)
     
     // /* The problem is with the authentication process
     //   When navigating on the page you should handle the following cases:
@@ -74,33 +97,35 @@ export default defineComponent({
     //     - there is a code, but not a token 
     //     - there is a token, but it's expired
     // */
-    // if (!token && !oauthCode) window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.appdata%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.file%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdocs%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fspreadsheets%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata.readonly&response_type=code&client_id=621637399988-gfrm4vi1lc1mae7f1s743p9277f27d8t.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A5173'
+
+    // Handling the case where the auth needs to be redirected to google
+    if (!token && !oauthCode) window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.appdata%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.file%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdocs%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fspreadsheets%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata.readonly&response_type=code&client_id=621637399988-gfrm4vi1lc1mae7f1s743p9277f27d8t.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A5173'
+    // // Handling the case where there is an oauth query code (else if (oauthCode && !token))
+    else if (!token) {
+        try {
+          const tokenResponse = await axios.get(`http://localhost:8080/api/auth/google?code=${oauthCode}`)
+          console.log('here', tokenResponse)
+          if (tokenResponse.request.status === 400) throw Error(tokenResponse.request.error_description)
+          else {
+            localStorage.setItem('token', JSON.stringify(tokenResponse.data))
+          }
+        } catch (error) {
+          console.log('error', error)
+          // toast.current?.show({ severity: 'error', summary: 'Error', detail: `${error}` })
+        }
+    }
+    // Handling the case where the query code is expired
     // else {
-    //   const getToken = async () => {
-    //     try {
-    //       const tokenResponse = await fetch(`http://localhost:8080/api/auth/google?code=${oauthCode}`)
-    //       const token = await tokenResponse.json()
-    //       console.log('here', token)
-    //       if (token.status === 400) throw Error(token.data.error_description)
-    //       else {
-    //         localStorage.setItem('token', JSON.stringify(token))
-    //       }
-    //     } catch (error) {
-    //       console.log('error', error)
-    //       toast.current?.show({ severity: 'error', summary: 'Error', detail: `${error}` })
-    //     }
-    //   }
-    //   getToken()
-    //   if (oauthCode) {
-    //     queryParams.delete('code')
-    //     setQueryParams(queryParams)
-    //   }
+    //   const checkAuth = await axios(`http://localhost:8080/api/auth${oauthCode}`)
+    //   console.log(checkAuth.data)
     // }
   }
 })
 </script>
 
 <template>
+  <!-- Create a logout btn for debugging purposes -->
+  <!-- <Button label="Logout" /> -->
   <div class="container">
     <form :onSubmit="submit">
       <div class="operation-select">
@@ -124,7 +149,7 @@ export default defineComponent({
       </div>
       <div class="date-input">
         <label for="date">Date:</label>
-        <InputText id="date" v-model="dateValue" placeholder="YYYY-MM-DD" required />
+        <InputText v-model="dateValue" id="date" placeholder="YYYY-MM-DD" required />
       </div>
       <div class="amount-input">
         <label for="amount">Amount:</label>
