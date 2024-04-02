@@ -77,17 +77,21 @@ export default defineComponent({
           this.submitDisabled = false
           localStorage.removeItem('token')
           this.$toast.add({ severity: 'error', summary: 'Error', detail: 'An error has occurred...', life: 3000 })
+          setTimeout(() => {
+            window.location.reload()
+          }, 2000)
       }
     }
   },
   async mounted() {
     const oauthCode = this.queryParams.get('code')
-    const token = localStorage.getItem('token')
+    const token = JSON.parse(localStorage.getItem('token')!)
 
     // Handling the case where the auth needs to be redirected to google
     if (!token && !oauthCode) window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.appdata%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.file%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdocs%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fspreadsheets%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata.readonly&response_type=code&client_id=621637399988-gfrm4vi1lc1mae7f1s743p9277f27d8t.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A5173'
     // Handling the case where there is an oauth query code
     else if (!token) {
+      console.log('getting the token')
         try {
           const tokenResponse = await axios.get(`http://localhost:8080/api/auth/google?code=${oauthCode}`)
 
