@@ -31,10 +31,11 @@ export default defineComponent({
     async submit(e: Event) {
       e.preventDefault()
       this.submitDisabled = true
-
+      
       // Validate the amount input
       if (!this.amountValue) {
         this.$toast.add({ severity: 'error', summary: 'Error', detail: 'Please fill in the amount.', life: 3000 })
+        this.submitDisabled = false
         throw Error('The amount input does not have a value.')
       }
 
@@ -91,14 +92,16 @@ export default defineComponent({
     if (!token && !oauthCode) window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.appdata%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.file%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdocs%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fspreadsheets%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata.readonly&response_type=code&client_id=621637399988-gfrm4vi1lc1mae7f1s743p9277f27d8t.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A5173'
     // Handling the case where there is an oauth query code
     else if (!token) {
-      console.log('getting the token')
         try {
           const tokenResponse = await axios.get(`http://localhost:8080/api/auth/google?code=${oauthCode}`)
 
           if (tokenResponse.request.status === 400) throw Error(tokenResponse.request.error_description)
-          else localStorage.setItem('token', JSON.stringify(tokenResponse.data))
+          else {
+            localStorage.setItem('token', JSON.stringify(tokenResponse.data))
+            window.location.replace('http://localhost:5173/') // [FIX] upon deployment, replace the url with an env variable
+          }
         } catch (error) {
-          this.$toast.add({ severity: 'error', summary: 'Error', detail: 'An error has occurred...', life: 3000 })
+          this.$toast.add({ severity: 'error', summary: 'Error', detail: 'Please try again...', life: 3000 })
         }
     }
   }
