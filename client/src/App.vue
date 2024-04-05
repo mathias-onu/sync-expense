@@ -9,6 +9,8 @@ interface Operation {
 export default defineComponent({
   data() {
     return {
+      apiUrl: import.meta.env.VITE_API_URL + '/api' as string,
+      oauthUrl: import.meta.env.VITE_OAUTH_URL as string,
       selectedOperation: null as Operation | null,
       operations: [
         { operation: 'withdrawal' },
@@ -44,7 +46,7 @@ export default defineComponent({
       try {
         // Deposit operation logic
         if (this.selectedOperation!.operation === 'deposit') {
-          const depositUpload = await axios(`http://localhost:8080/api/convert?date=${this.dateValue}&operation=${this.selectedOperation?.operation}&amount=${Number(this.amountValue)}`, {
+          const depositUpload = await axios(`${this.apiUrl}/convert?date=${this.dateValue}&operation=${this.selectedOperation?.operation}&amount=${Number(this.amountValue)}`, {
               method: 'POST',
               headers: {
                 "Authorization": `Bearer ${token}`,
@@ -61,7 +63,7 @@ export default defineComponent({
           const formData = new FormData()
           formData.append('image', this.fileValue!)
 
-          const fileUpload = await axios.post(`http://localhost:8080/api/convert?date=${this.dateValue}&operation=${this.selectedOperation?.operation}&amount=${Number(this.amountValue)}`, formData, {
+          const fileUpload = await axios.post(`${this.apiUrl}/convert?date=${this.dateValue}&operation=${this.selectedOperation?.operation}&amount=${Number(this.amountValue)}`, formData, {
             headers: {
               "Authorization": `Bearer ${token}`,
               "Content-Type": 'multipart/form-data'
@@ -89,16 +91,16 @@ export default defineComponent({
     const token = JSON.parse(localStorage.getItem('token')!)
 
     // Handling the case where the auth needs to be redirected to google
-    if (!token && !oauthCode) window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.appdata%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.file%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdocs%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fspreadsheets%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata.readonly&response_type=code&client_id=621637399988-gfrm4vi1lc1mae7f1s743p9277f27d8t.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A5173'
+    if (!token && !oauthCode) window.location.href = this.oauthUrl
     // Handling the case where there is an oauth query code
     else if (!token) {
         try {
-          const tokenResponse = await axios.get(`http://localhost:8080/api/auth/google?code=${oauthCode}`)
+          const tokenResponse = await axios.get(`${this.apiUrl}/auth/google?code=${oauthCode}`)
 
           if (tokenResponse.request.status === 400) throw Error(tokenResponse.request.error_description)
           else {
             localStorage.setItem('token', JSON.stringify(tokenResponse.data))
-            window.location.replace('http://localhost:5173/') // [FIX] upon deployment, replace the url with an env variable
+            window.location.replace(import.meta.env.VITE_API_URL)
           }
         } catch (error) {
           this.$toast.add({ severity: 'error', summary: 'Error', detail: 'Please try again...', life: 3000 })

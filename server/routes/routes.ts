@@ -9,6 +9,8 @@ import { google } from 'googleapis'
 const router = express.Router()
 const upload = multer()
 
+// [FEATURE] add an endpoint which returns the oauth url
+
 router.get('/auth/google', async (req, res) => {
     const { code } = req.query
     try {
@@ -111,12 +113,12 @@ router.post('/convert', upload.single('image'), async (req, res) => {
                         includeValuesInResponse: true
                     }
                 })
-                console.log(`${new Date().toLocaleTimeString()} - insertion in sheet performed`)
+                console.log(`${new Date().toLocaleTimeString()} - insertion in sheet performed [SUCCESSFUL CONVERSION]`)
 
                 // Delete the temporary pdf
                 fs.unlinkSync(pdfPath)
 
-                res.status(200).json('The withdrawal conversion were successfully completed!')
+                res.status(200).json('The withdrawal was successfully performed!')
             })
         } else {
             // Insert a deposit in Google sheet
