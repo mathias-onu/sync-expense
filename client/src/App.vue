@@ -28,6 +28,7 @@ export default defineComponent({
       if (this.selectedOperation?.operation === 'deposit' && this.fileValue) this.fileValue = null
     },
     changeFile(e: any) {
+      // [FIX] - Check if the file extension is .HEIC
       this.fileValue = e.target.files[0]
     },
     async submit(e: Event) {
@@ -86,7 +87,7 @@ export default defineComponent({
       }
     }
   },
-  async mounted() {
+  async beforeMount() {
     const oauthCode = this.queryParams.get('code')
     const token = JSON.parse(localStorage.getItem('token')!)
 
@@ -100,7 +101,7 @@ export default defineComponent({
           if (tokenResponse.request.status === 400) throw Error(tokenResponse.request.error_description)
           else {
             localStorage.setItem('token', JSON.stringify(tokenResponse.data))
-            window.location.replace(import.meta.env.VITE_API_URL)
+            window.location.replace(import.meta.env.PROD ? import.meta.env.VITE_OAUTH_URL : import.meta.env.VITE_DEV_SERVER_URL)
           }
         } catch (error) {
           this.$toast.add({ severity: 'error', summary: 'Error', detail: 'Please try again...', life: 3000 })
