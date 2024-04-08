@@ -2,7 +2,7 @@ import express from 'express'
 import multer from 'multer'
 import convert from 'heic-convert'
 import PDFDocument from 'pdfkit'
-import fs from "fs"
+import fs, { mkdir } from "fs"
 import { AxiosError } from 'axios'
 import { google } from 'googleapis'
 
@@ -79,7 +79,7 @@ router.post('/convert', upload.single('image'), async (req, res) => {
 
             // Write to PDF file
             const doc = new PDFDocument()
-            const pdfPath = `server/tmp/${date}.pdf`
+            const pdfPath = `${date}.pdf`
             const writeStream = fs.createWriteStream(pdfPath)
 
             doc.pipe(writeStream)
