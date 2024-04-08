@@ -67,15 +67,22 @@ router.post('/convert', upload.single('image'), async (req, res) => {
         const lastRowIndex = balanceColumn.length + 1
         const balance = Number(balanceColumn[balanceColumn.length - 1][0])
 
+        console.log(req.file!)
+        console.log(req.file!.mimetype)
         if (operation === 'withdrawal') {
-            console.log(`${new Date().toLocaleTimeString()} - conversion started`)
-            // Convert .heic to .png format
-            const jpgBuffer = await convert({
-                buffer: req.file!.buffer, 
-                format: 'JPEG',   
-                quality: 1         
-            }) 
-            console.log(`${new Date().toLocaleTimeString()} - successful conversion`)
+            console.log(`${new Date().toLocaleTimeString()} - creating PDF document...`)
+            
+            const isHeic = req.file!.mimetype.includes('heic')
+            let jpgBuffer
+            if (req.file!.mimetype.includes('heic')) {
+                // Convert .heic to .png format
+                jpgBuffer = await convert({
+                    buffer: req.file!.buffer, 
+                    format: 'JPEG',   
+                    quality: 1         
+                }) 
+                console.log(`${new Date().toLocaleTimeString()} - successful conversion`)
+            }
 
             // Write to PDF file
             const doc = new PDFDocument()
@@ -83,7 +90,7 @@ router.post('/convert', upload.single('image'), async (req, res) => {
             const writeStream = fs.createWriteStream(pdfPath)
 
             doc.pipe(writeStream)
-            doc.image(jpgBuffer, 0, 0, { width: 400 })
+            doc.image(isHeic ? jpgBuffer! : req.file!.buffer, 0, 0, { width: 400 })
             doc.end()
 
             writeStream.on('finish', async () => {
