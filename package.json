@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server_dist/server.js",
     "server": "tsc -p tsconfig.json -w | nodemon server_dist/server.js",
-    "build": "npm run build:server && npm run build:client && npm ci",
+    "build": "npm run build:server && npm run build:client",
     "build:server": "npm install --production=false && tsc -p tsconfig.json",
     "build:client": "cd client && npm install --production=false && npm run build && cd ../"
   },
