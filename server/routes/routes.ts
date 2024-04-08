@@ -44,7 +44,6 @@ router.get('/auth/google', async (req, res) => {
 })
 
 router.post('/convert', upload.single('image'), async (req, res) => {
-    console.log(`${new Date().toLocaleTimeString()} - conversion started`)
     const { date, operation, amount } = req.query
     const accessToken = req.headers.authorization!.split(' ')[1]
 
@@ -69,6 +68,7 @@ router.post('/convert', upload.single('image'), async (req, res) => {
         const balance = Number(balanceColumn[balanceColumn.length - 1][0])
 
         if (operation === 'withdrawal') {
+            console.log(`${new Date().toLocaleTimeString()} - conversion started`)
             // Convert .heic to .png format
             const jpgBuffer = await convert({
                 buffer: req.file!.buffer, 
