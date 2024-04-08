@@ -9,7 +9,24 @@ import { google } from 'googleapis'
 const router = express.Router()
 const upload = multer()
 
-// [FEATURE] add an endpoint which returns the oauth url
+router.get('/auth/oauth-url', (req, res) => {
+    const oauthClient = oauth2Client()
+    const scopes = [
+        'https://www.googleapis.com/auth/drive.appdata',
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/docs',
+        'https://www.googleapis.com/auth/spreadsheets',
+        'https://www.googleapis.com/auth/drive',
+        'https://www.googleapis.com/auth/drive.metadata',
+        'https://www.googleapis.com/auth/drive.metadata.readonly',
+    ]
+    const url = oauthClient.generateAuthUrl({
+        access_type: 'offline',
+        scope: scopes
+    })
+    
+    res.json(url)
+})
 
 router.get('/auth/google', async (req, res) => {
     const { code } = req.query

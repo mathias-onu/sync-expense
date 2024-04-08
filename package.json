@@ -7,9 +7,9 @@
   "scripts": {
     "start": "node server_dist/server.js",
     "server": "tsc -p tsconfig.json -w | nodemon server_dist/server.js",
-    "build": "npm run build:server && npm run build:client",
-    "build:server": "npm ci && tsc -p tsconfig.json",
-    "build:client": "cd client && npm ci && npm run build"
+    "build": "npm run build:server && npm run build:client && npm ci",
+    "build:server": "npm install --production=false && tsc -p tsconfig.json",
+    "build:client": "cd client && npm install --production=false && npm run build && cd ../"
   },
   "repository": {
     "type": "git",
@@ -27,7 +27,6 @@
     "googleapis": "^134.0.0",
     "heic-convert": "^2.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.2.1",
     "multer": "^1.4.5-lts.1",
     "pdfkit": "^0.14.0",
     "ts-node": "^10.9.2"
